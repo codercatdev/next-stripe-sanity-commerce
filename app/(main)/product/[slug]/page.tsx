@@ -7,6 +7,7 @@ import { BuyNow } from '@/components/BuyNow'
 import { AddToCart } from '@/components/AddToCart'
 import { productBySlugQuery } from '@/sanity/lib/queries'
 import { sanityFetch } from '@/sanity/lib/fetch'
+import { notFound } from 'next/navigation'
 
 function ProductDetailsSkeleton() {
   return (
@@ -52,6 +53,11 @@ async function ProductDetails({ slug }: { slug: string }) {
       params: { slug },
     }),
   ]);
+
+  if (!product) {
+    return notFound();
+  }
+
 
   return (
     <div className="bg-white">
