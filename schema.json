@@ -565,6 +565,13 @@
         },
         "optional": true
       },
+      "stripePriceId": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        },
+        "optional": true
+      },
       "active": {
         "type": "objectAttribute",
         "value": {

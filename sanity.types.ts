@@ -109,6 +109,7 @@ export type Product = {
     [internalGroqTypeReferenceTo]?: "price";
   };
   stripeProductId?: string;
+  stripePriceId?: string;
   active?: boolean;
   featured?: boolean;
   embedding?: Array<number>;

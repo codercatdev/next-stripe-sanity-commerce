@@ -313,7 +313,7 @@ async function syncPriceToSanity(price: Stripe.Price, retryCount = 0) {
     if (!productDoc) {
       if (retryCount < maxRetries) {
         console.warn(`[WEBHOOK] WARNING: Product with stripeProductId ${price.product} not found - retrying in ${retryDelay}ms (attempt ${retryCount + 1}/${maxRetries + 1})`);
-        
+
         // Schedule retry with exponential backoff
         await new Promise(resolve => setTimeout(resolve, retryDelay));
         return await syncPriceToSanity(price, retryCount + 1);
@@ -391,11 +391,11 @@ async function syncPriceToSanity(price: Stripe.Price, retryCount = 0) {
 
     if (waitingProducts.length > 0) {
       console.log(`[WEBHOOK] Found ${waitingProducts.length} products waiting for price ${price.id}`);
-      
+
       // Update all waiting products
       const updatePromises = waitingProducts.map(async (waitingProduct: any) => {
         console.log(`[WEBHOOK] Updating waiting product ${waitingProduct._id} with price reference`);
-        
+
         return client
           .patch(waitingProduct._id)
           .set({
