@@ -1,9 +1,10 @@
-import {defineField, defineType} from 'sanity'
+import { defineField, defineType } from 'sanity'
 
 export default defineType({
   name: 'price',
   title: 'Price',
   type: 'document',
+  readOnly: true,
   fields: [
     defineField({
       name: 'stripePriceId',
@@ -27,7 +28,7 @@ export default defineType({
       name: 'product',
       title: 'Product',
       type: 'reference',
-      to: [{type: 'product'}],
+      to: [{ type: 'product' }],
     }),
   ],
 })

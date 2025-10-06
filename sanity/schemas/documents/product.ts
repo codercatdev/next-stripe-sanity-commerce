@@ -40,18 +40,28 @@ export default defineType({
       title: 'Prices',
       type: 'array',
       of: [{ type: 'reference', to: [{ type: 'price' }] }],
+      readOnly: true,
     }),
     defineField({
       name: 'default_price',
       title: 'Default Price',
       type: 'reference',
       to: [{ type: 'price' }],
+      readOnly: true,
     }),
     defineField({
       name: 'stripeProductId',
       title: 'Stripe Product ID',
       type: 'string',
       readOnly: true,
+    }),
+    defineField({
+      name: 'stripePriceId',
+      title: 'Pending Stripe Price ID',
+      type: 'string',
+      readOnly: true,
+      hidden: true,
+      description: 'Temporary field to store Stripe price ID until price document is created'
     }),
     defineField({
       name: 'active',
