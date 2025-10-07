@@ -47,11 +47,11 @@ export async function createCheckoutSession(priceId: string): Promise<{ url?: st
   }
 }
 
-export async function addToCart(productId: string, sessionId: string): Promise<{ error?: string }> {
+export async function addToCart(productId: string, userId: string): Promise<{ error?: string }> {
   try {
     // Validate inputs
-    if (!productId || !sessionId) {
-      return { error: 'Missing product ID or session ID' }
+    if (!productId || !userId) {
+      return { error: 'Missing product ID or user ID' }
     }
 
     // Check if write token is configured
@@ -60,9 +60,9 @@ export async function addToCart(productId: string, sessionId: string): Promise<{
       return { error: 'Server configuration error' }
     }
 
-    console.log('Adding to cart:', { productId, sessionId })
+    console.log('Adding to cart:', { productId, userId })
 
-    const cart = await client.fetch('*[_type == "cart" && sessionId == $sessionId][0]', { sessionId })
+    const cart = await client.fetch('*[_type == "cart" && userId == $userId][0]', { userId })
 
     if (cart) {
       console.log('Found existing cart:', cart._id)
@@ -89,7 +89,7 @@ export async function addToCart(productId: string, sessionId: string): Promise<{
       console.log('Creating new cart')
       await writeClient.create({
         _type: 'cart',
-        sessionId,
+        userId,
         items: [{
           _key: `item-${Date.now()}`,
           product: { _type: 'reference', _ref: productId },
@@ -133,15 +133,15 @@ export async function removeCartItem(cartId: string, itemId: string): Promise<{ 
   }
 }
 
-export async function getCart(sessionId: string): Promise<CartQueryResult | null> {
+export async function getCart(userId: string): Promise<CartQueryResult | null> {
   try {
-    console.log('Fetching cart for sessionId:', sessionId);
+    console.log('Fetching cart for userId:', userId);
 
     // First, let's see if there are any carts at all
     const allCarts = await client.fetch('*[_type == "cart"]');
     console.log('All carts in database:', allCarts);
 
-    const cart = await client.fetch(cartQuery, { sessionId });
+    const cart = await client.fetch(cartQuery, { userId });
     console.log('Cart fetch result:', cart);
 
     if (cart) {

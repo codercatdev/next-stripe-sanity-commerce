@@ -45,7 +45,7 @@ export type Cart = {
     quantity?: number;
     _key: string;
   }>;
-  sessionId?: string;
+  userId?: string;
 };
 
 export type Collection = {
@@ -820,7 +820,7 @@ export type FeaturedProductsQueryResult = Array<{
   } | null;
 }>;
 // Variable: cartQuery
-// Query: *[_type == "cart" && sessionId == $sessionId][0]{        ...,        items[]{          ...,          product->{            _id,            name,            description,            "slug": slug.current,            "price": default_price->.unit_amount,            "image": images[0].asset->,          }        }      }
+// Query: *[_type == "cart" && userId == $userId][0]{        ...,        items[]{          ...,          product->{            _id,            name,            description,            "slug": slug.current,            "price": default_price->.unit_amount,            "image": images[0].asset->,          }        }      }
 export type CartQueryResult = {
   _id: string;
   _type: "cart";
@@ -860,7 +860,7 @@ export type CartQueryResult = {
     quantity?: number;
     _key: string;
   }> | null;
-  sessionId?: string;
+  userId?: string;
 } | null;
 // Variable: cartByIdQuery
 // Query: *[_type == "cart" && _id == $cartId][0]{        items[]{          quantity,          product->{            "priceId": default_price->.stripePriceId          }        }      }
@@ -885,7 +885,7 @@ declare module "@sanity/client" {
     "\n  *[_type == \"product\"]{\n    _id,\n    name,\n    description,\n    \"slug\": slug.current,\n    \"price\": default_price->.unit_amount,\n    \"image\": images[0].asset->,\n  }\n": ProductsQueryResult;
     "\n  *[_type == \"product\" && slug.current == $slug][0]{\n    _id,\n    name,\n    description,\n    \"slug\": slug.current,\n    \"price\": default_price->.unit_amount,\n    \"image\": images[0].asset->,\n    \"priceId\": default_price->.stripePriceId,\n    }\n": ProductBySlugQueryResult;
     "\n  *[_type == \"product\"] | order(_createdAt asc)[0...8]{\n    _id,\n    name,\n    \"slug\": slug.current,\n    \"price\": default_price->.unit_amount,\n    \"image\": images[0].asset->,\n  }\n": FeaturedProductsQueryResult;
-    "\n  *[_type == \"cart\" && sessionId == $sessionId][0]{\n        ...,\n        items[]{\n          ...,\n          product->{\n            _id,\n            name,\n            description,\n            \"slug\": slug.current,\n            \"price\": default_price->.unit_amount,\n            \"image\": images[0].asset->,\n          }\n        }\n      }\n": CartQueryResult;
+    "\n  *[_type == \"cart\" && userId == $userId][0]{\n        ...,\n        items[]{\n          ...,\n          product->{\n            _id,\n            name,\n            description,\n            \"slug\": slug.current,\n            \"price\": default_price->.unit_amount,\n            \"image\": images[0].asset->,\n          }\n        }\n      }\n": CartQueryResult;
     "\n  *[_type == \"cart\" && _id == $cartId][0]{\n        items[]{\n          quantity,\n          product->{\n            \"priceId\": default_price->.stripePriceId\n          }\n        }\n      }\n": CartByIdQueryResult;
   }
 }

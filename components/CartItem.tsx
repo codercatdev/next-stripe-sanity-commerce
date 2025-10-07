@@ -78,15 +78,15 @@ export function CartItem({ item, cartId, onRemoveItem, onUpdateQuantity }: CartI
   }
 
   return (
-    <li key={item.product._id} className="flex py-6 sm:py-10">
+    <li key={item.product._id} className="flex flex-col gap-2 py-6 sm:py-10 ">
       <div className="flex-shrink-0">
         <div className='w-24 h-24 rounded-md sm:w-48 sm:h-48 flex items-center justify-center overflow-hidden'>
           <ProductImage product={item.product} />
         </div>
       </div>
 
-      <div className="ml-4 flex flex-1 flex-col justify-between sm:ml-6">
-        <div className="relative pr-9 sm:grid sm:grid-cols-2 sm:gap-x-6 sm:pr-0">
+      <div className="flex flex-1 flex-col justify-between">
+        <div className="relative pr-9 flex sm:gap-x-6 sm:pr-0">
           <div>
             <div className="flex justify-between">
               <h3 className="text-sm">

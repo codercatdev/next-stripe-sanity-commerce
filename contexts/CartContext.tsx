@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, ReactNode } from 'react'
+import { createContext, useContext, ReactNode, use } from 'react'
 import useSWR from 'swr'
 import useSWRMutation from 'swr/mutation'
 import { useAuth } from '@clerk/nextjs'
@@ -29,14 +29,14 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined)
 
 // Fetcher function for SWR
-async function cartFetcher([_, sessionId]: [string, string]) {
-    if (!sessionId) return null
-    return await getCart(sessionId)
+async function cartFetcher([_, userId]: [string, string]) {
+    if (!userId) return null
+    return await getCart(userId)
 }
 
 // Mutation functions
-async function addItemMutation(url: [string, string], { arg }: { arg: { productId: string; sessionId: string } }) {
-    return await addToCart(arg.productId, arg.sessionId)
+async function addItemMutation(url: [string, string], { arg }: { arg: { productId: string; userId: string } }) {
+    return await addToCart(arg.productId, arg.userId)
 }
 
 async function removeItemMutation(url: [string, string], { arg }: { arg: { cartId: string; itemKey: string } }) {
@@ -52,7 +52,7 @@ async function checkoutMutation(url: [string, string], { arg }: { arg: { cartId:
 }
 
 export function CartProvider({ children }: { children: ReactNode }) {
-    const { sessionId } = useAuth()
+    const { userId } = useAuth()
 
     // Main cart data fetching
     const {
@@ -61,7 +61,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         isLoading,
         mutate
     } = useSWR(
-        sessionId ? ['cart', sessionId] : null,
+        userId ? ['cart', userId] : null,
         cartFetcher,
         {
             revalidateOnFocus: false,
@@ -72,21 +72,22 @@ export function CartProvider({ children }: { children: ReactNode }) {
     )
 
     // Mutations
-    const { trigger: triggerAddItem, isMutating: isAddingItem } = useSWRMutation(['cart', sessionId || ''], addItemMutation)
-    const { trigger: triggerRemoveItem, isMutating: isRemovingItem } = useSWRMutation(['cart', sessionId || ''], removeItemMutation)
-    const { trigger: triggerUpdateQuantity, isMutating: isUpdatingQuantity } = useSWRMutation(['cart', sessionId || ''], updateQuantityMutation)
-    const { trigger: triggerCheckout, isMutating: isCheckingOut } = useSWRMutation(['cart', sessionId || ''], checkoutMutation)
+    const { trigger: triggerAddItem, isMutating: isAddingItem } = useSWRMutation(['cart', userId || ''], addItemMutation)
+    const { trigger: triggerRemoveItem, isMutating: isRemovingItem } = useSWRMutation(['cart', userId || ''], removeItemMutation)
+    const { trigger: triggerUpdateQuantity, isMutating: isUpdatingQuantity } = useSWRMutation(['cart', userId || ''], updateQuantityMutation)
+    const { trigger: triggerCheckout, isMutating: isCheckingOut } = useSWRMutation(['cart', userId || ''], checkoutMutation)
 
+    // Combined loading state for any cart operation
     const isUpdating = isAddingItem || isRemovingItem || isUpdatingQuantity || isCheckingOut
 
     const addItem = async (productId: string): Promise<{ error?: string }> => {
-        if (!sessionId) {
+        if (!userId) {
             toast.error('Please sign in to add items to cart')
-            return { error: 'No session found' }
+            return { error: 'No user found' }
         }
 
         try {
-            const result = await triggerAddItem({ productId, sessionId })
+            const result = await triggerAddItem({ productId, userId })
 
             if (result?.error) {
                 toast.error(result.error)

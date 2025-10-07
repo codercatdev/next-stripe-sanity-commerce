@@ -67,7 +67,7 @@ export const featuredProductsQuery = defineQuery(`
 `);
 
 export const cartQuery = defineQuery(`
-  *[_type == "cart" && sessionId == $sessionId][0]{
+  *[_type == "cart" && userId == $userId][0]{
         ...,
         items[]{
           ...,

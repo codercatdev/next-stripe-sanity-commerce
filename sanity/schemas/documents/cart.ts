@@ -1,5 +1,5 @@
 
-import {defineField, defineType} from 'sanity'
+import { defineField, defineType } from 'sanity'
 
 export const cart = defineType({
   name: 'cart',
@@ -18,7 +18,7 @@ export const cart = defineType({
               name: 'product',
               title: 'Product',
               type: 'reference',
-              to: [{type: 'product'}],
+              to: [{ type: 'product' }],
             },
             {
               name: 'quantity',
@@ -30,8 +30,8 @@ export const cart = defineType({
       ],
     }),
     defineField({
-      name: 'sessionId',
-      title: 'Session ID',
+      name: 'userId',
+      title: 'User ID',
       type: 'string',
     }),
   ],

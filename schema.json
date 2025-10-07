@@ -193,7 +193,7 @@
         },
         "optional": true
       },
-      "sessionId": {
+      "userId": {
         "type": "objectAttribute",
         "value": {
           "type": "string"

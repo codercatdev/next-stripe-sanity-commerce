@@ -78,7 +78,7 @@ export function CartSheet() {
         </SignedOut>
 
         <SignedIn>
-          <div className="mt-4">
+          <div className="mt-4 flex flex-col" style={{ height: 'calc(100vh - 180px)' }}>
             {isLoading ? (
               <div className="flex items-center justify-center py-8">
                 <Loader2 className="h-6 w-6 animate-spin" />
@@ -92,13 +92,13 @@ export function CartSheet() {
                 </Button>
               </div>
             ) : cart && cart.items && cart.items.length > 0 ? (
-              <div>
-                <div className="mb-4">
+              <div className="flex flex-col h-full">
+                <div className="mb-4 flex-shrink-0">
                   <p className="text-sm text-gray-600">Items: {itemCount}</p>
                   <p className="text-lg font-semibold">Total: ${(totalPrice / 100).toFixed(2)}</p>
                 </div>
 
-                <ul role="list" className="divide-y divide-gray-200 max-h-96 overflow-y-auto">
+                <ul role="list" className="divide-y divide-gray-200 flex-1 overflow-y-auto min-h-0">
                   {cart.items
                     .filter(item => item && item.product !== null)
                     .map((item, index) => {
@@ -118,7 +118,7 @@ export function CartSheet() {
                     })}
                 </ul>
 
-                <div className="mt-6 border-t pt-4">
+                <div className="mt-6 border-t pt-4 flex-shrink-0">
                   <Button
                     onClick={checkout}
                     className="w-full"
