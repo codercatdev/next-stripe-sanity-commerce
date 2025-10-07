@@ -57,7 +57,7 @@ export function Header() {
             <UserButton />
           </SignedIn>
         </div>
-        
+
         {/* Mobile menu */}
         <div className="flex lg:hidden items-center gap-2">
           <SignedOut>
@@ -83,22 +83,22 @@ export function Header() {
                 <SheetTitle>Menu</SheetTitle>
               </SheetHeader>
               <div className="flex flex-col gap-4 mt-8">
-                <Link 
-                  href="/" 
+                <Link
+                  href="/"
                   className="text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50 px-3 py-2 rounded-md"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Home
                 </Link>
-                <Link 
-                  href="/products" 
+                <Link
+                  href="/products"
                   className="text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50 px-3 py-2 rounded-md"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Shoes
                 </Link>
-                <Link 
-                  href="/blog" 
+                <Link
+                  href="/blog"
                   className="text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50 px-3 py-2 rounded-md"
                   onClick={() => setMobileMenuOpen(false)}
                 >
