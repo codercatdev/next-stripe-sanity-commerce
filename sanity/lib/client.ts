@@ -29,3 +29,12 @@ export const writeClient = createClient({
   useCdn: false,
   token: process.env.SANITY_API_TOKEN,
 });
+
+// Client for reading real-time data without CDN caching
+export const realtimeClient = createClient({
+  projectId,
+  dataset,
+  apiVersion,
+  useCdn: false, // No CDN for real-time cart data
+  perspective: "published",
+});

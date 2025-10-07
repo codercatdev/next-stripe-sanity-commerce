@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { toast } from 'sonner'
 import { updateCartItemQuantity, removeCartItem } from '@/app/actions'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Input } from '@/components/ui/input'
 import { ProductImage } from './ProductImage'
 import { Button } from './ui/button'
@@ -23,22 +23,25 @@ type CartItemProps = {
 }
 
 export function CartItem({ item, cartId, onRemoveItem, onUpdateQuantity }: CartItemProps) {
-  const [optimisticQuantity, setOptimisticQuantity] = useState(item.quantity)
+  const currentQuantity = item.quantity || 0
+  const [inputValue, setInputValue] = useState(currentQuantity.toString())
+  const debounceRef = useRef<NodeJS.Timeout | null>(null)
 
-  const handleQuantityChange = async (newQuantity: number) => {
-    // Use provided handler if available, otherwise fall back to direct action
+  // Update input value when item quantity changes (from optimistic updates)
+  useEffect(() => {
+    setInputValue(currentQuantity.toString())
+  }, [currentQuantity])
+
+  const handleQuantityChange = useCallback(async (newQuantity: number) => {
+    if (newQuantity < 0) return // Prevent negative quantities
+
+    // Use provided handler (which should be optimistic)
     if (onUpdateQuantity) {
-      const result = await onUpdateQuantity(item._key, newQuantity)
-      if (result?.error) {
-        toast.error(result.error)
-      }
+      await onUpdateQuantity(item._key, newQuantity)
       return
     }
 
-    // Fallback to local state management
-    const oldQuantity = optimisticQuantity
-    setOptimisticQuantity(newQuantity)
-
+    // Fallback - shouldn't normally be used with the new optimistic system
     if (newQuantity === 0) {
       await handleRemoveItem()
       return
@@ -47,35 +50,55 @@ export function CartItem({ item, cartId, onRemoveItem, onUpdateQuantity }: CartI
     const result = await updateCartItemQuantity(cartId, item._key, newQuantity)
     if (result?.error) {
       toast.error(result.error)
-      setOptimisticQuantity(oldQuantity)
+      // Reset input to actual quantity on error
+      setInputValue(currentQuantity.toString())
     } else {
-      toast.success('Quantity updated')
       window.dispatchEvent(new CustomEvent('cart-updated'))
     }
-  }
+  }, [item._key, onUpdateQuantity, cartId, currentQuantity])
 
-  const handleRemoveItem = async () => {
-    // Use provided handler if available, otherwise fall back to direct action
-    if (onRemoveItem) {
-      const result = await onRemoveItem(item._key)
-      if (result?.error) {
-        toast.error(result.error)
+  // Debounced quantity update for input changes
+  const handleInputChange = useCallback((value: string) => {
+    setInputValue(value)
+
+    // Clear previous debounce
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current)
+    }
+
+    // Debounce the actual quantity update by 300ms (shorter for better UX)
+    debounceRef.current = setTimeout(() => {
+      const numValue = parseInt(value) || 0
+      if (numValue !== currentQuantity) {
+        handleQuantityChange(numValue)
       }
+    }, 300)
+  }, [currentQuantity, handleQuantityChange])
+
+  // Cleanup debounce on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current)
+      }
+    }
+  }, [])
+
+  const handleRemoveItem = useCallback(async () => {
+    // Use provided handler (which should be optimistic)
+    if (onRemoveItem) {
+      await onRemoveItem(item._key)
       return
     }
 
-    // Fallback to local state management
-    const oldQuantity = optimisticQuantity
-    setOptimisticQuantity(0)
+    // Fallback - shouldn't normally be used with the new optimistic system
     const result = await removeCartItem(cartId, item._key)
     if (result?.error) {
       toast.error(result.error)
-      setOptimisticQuantity(oldQuantity)
     } else {
-      toast.success('Item removed')
       window.dispatchEvent(new CustomEvent('cart-updated'))
     }
-  }
+  }, [item._key, onRemoveItem, cartId])
 
   return (
     <li key={item.product._id} className="flex flex-col gap-2 py-6 sm:py-10 ">
@@ -108,10 +131,21 @@ export function CartItem({ item, cartId, onRemoveItem, onUpdateQuantity }: CartI
                 name={`quantity-${item._key}`}
                 type="number"
                 className="w-16"
-                value={onUpdateQuantity ? item.quantity : optimisticQuantity}
-                onChange={(e) => handleQuantityChange(parseInt(e.target.value))}
+                value={inputValue}
+                onChange={(e) => handleInputChange(e.target.value)}
+                onBlur={() => {
+                  // On blur, ensure we have a valid quantity and trigger immediate update
+                  const numValue = parseInt(inputValue) || 0
+                  if (numValue !== currentQuantity) {
+                    if (debounceRef.current) {
+                      clearTimeout(debounceRef.current)
+                    }
+                    handleQuantityChange(numValue)
+                  }
+                }}
+                min="0"
               />
-              <Button onClick={handleRemoveItem} variant="ghost" size="icon" aria-label="Submit">
+              <Button onClick={handleRemoveItem} variant="ghost" size="icon" aria-label="Remove item">
                 <Trash className="h-4 w-4" />
               </Button>
             </div>

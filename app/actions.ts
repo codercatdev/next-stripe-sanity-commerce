@@ -2,7 +2,7 @@
 
 import { draftMode } from "next/headers";
 import Stripe from 'stripe'
-import { client, writeClient } from "@/sanity/lib/client";
+import { client, writeClient, realtimeClient } from "@/sanity/lib/client";
 import { cartByIdQuery, cartQuery } from "@/sanity/lib/queries";
 import { Cart, CartByIdQueryResult, CartQueryResult } from "@/sanity.types";
 
@@ -109,51 +109,66 @@ export async function addToCart(productId: string, userId: string): Promise<{ er
 
 export async function updateCartItemQuantity(cartId: string, itemId: string, quantity: number): Promise<{ error?: string }> {
   try {
-    await writeClient
+    // Validate inputs
+    if (!cartId || !itemId || quantity < 0) {
+      return { error: 'Invalid parameters' }
+    }
+
+    console.log('Updating cart item quantity:', { cartId, itemId, quantity })
+
+    const result = await writeClient
       .patch(cartId)
       .set({ [`items[_key=="${itemId}"].quantity`]: quantity })
       .commit()
+
+    console.log('Update result:', result)
     return {}
   } catch (error) {
-    console.error(error)
-    return { error: 'Failed to update cart item quantity' }
+    console.error('Update quantity error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Failed to update cart item quantity'
+    return { error: errorMessage }
   }
 }
 
 export async function removeCartItem(cartId: string, itemId: string): Promise<{ error?: string }> {
   try {
-    await writeClient
+    // Validate inputs
+    if (!cartId || !itemId) {
+      return { error: 'Invalid parameters' }
+    }
+
+    console.log('Removing cart item:', { cartId, itemId })
+
+    const result = await writeClient
       .patch(cartId)
       .unset([`items[_key=="${itemId}"]`])
       .commit()
+
+    console.log('Remove result:', result)
     return {}
   } catch (error) {
-    console.error(error)
-    return { error: 'Failed to remove cart item' }
+    console.error('Remove item error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Failed to remove cart item'
+    return { error: errorMessage }
   }
 }
 
 export async function getCart(userId: string): Promise<CartQueryResult | null> {
   try {
+    if (!userId) {
+      console.log('No userId provided for cart fetch')
+      return null
+    }
+
     console.log('Fetching cart for userId:', userId);
 
-    // First, let's see if there are any carts at all
-    const allCarts = await client.fetch('*[_type == "cart"]');
-    console.log('All carts in database:', allCarts);
-
-    const cart = await client.fetch(cartQuery, { userId });
-    console.log('Cart fetch result:', cart);
+    // Use realtimeClient instead of client to bypass CDN cache and get fresh data
+    const cart = await realtimeClient.fetch(cartQuery, { userId });
 
     if (cart) {
-      console.log('Cart items:', cart.items);
-      console.log('Number of items:', cart.items?.length || 0);
-
-      // Log each item for debugging
-      if (cart.items) {
-        cart.items.forEach((item, index) => {
-          console.log(`Item ${index}:`, item);
-        });
-      }
+      console.log('Cart found:', cart._id, 'with', cart.items?.length || 0, 'items');
+    } else {
+      console.log('No cart found for user:', userId);
     }
 
     return cart;
@@ -163,6 +178,39 @@ export async function getCart(userId: string): Promise<CartQueryResult | null> {
   }
 }
 
+
+// Batch update cart items for better performance
+export async function batchUpdateCartItems(
+  cartId: string,
+  updates: Array<{ itemKey: string; quantity: number }>
+): Promise<{ error?: string }> {
+  try {
+    if (!cartId || !updates.length) {
+      return { error: 'Invalid parameters' }
+    }
+
+    console.log('Batch updating cart items:', { cartId, updates })
+
+    let patch = writeClient.patch(cartId)
+
+    // Apply all updates in a single transaction
+    updates.forEach(({ itemKey, quantity }) => {
+      if (quantity > 0) {
+        patch = patch.set({ [`items[_key=="${itemKey}"].quantity`]: quantity })
+      } else {
+        patch = patch.unset([`items[_key=="${itemKey}"]`])
+      }
+    })
+
+    const result = await patch.commit()
+    console.log('Batch update result:', result)
+    return {}
+  } catch (error) {
+    console.error('Batch update error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Failed to batch update cart items'
+    return { error: errorMessage }
+  }
+}
 
 export async function createCheckoutSessionFromCart(cartId: string): Promise<{ url?: string; error?: string }> {
   try {

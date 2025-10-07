@@ -26,7 +26,10 @@ function CartDetailsSkeleton() {
 }
 
 function CartDetails() {
-  const { cart, isLoading, error, removeItem, updateQuantity, checkout, isUpdating, mutate } = useCart()
+  const { cart, optimisticCart, isLoading, error, removeItem, updateQuantity, checkout, isUpdating, mutate } = useCart()
+
+  // Use optimistic cart for UI, fallback to regular cart
+  const displayCart = optimisticCart || cart
 
   if (isLoading) {
     return <CartDetailsSkeleton />
@@ -48,21 +51,21 @@ function CartDetails() {
     )
   }
 
-  if (!cart || !cart.items || cart.items.length === 0) {
+  if (!displayCart || !displayCart.items || displayCart.items.length === 0) {
     return (
       <div className="bg-white">
         <div className="mx-auto max-w-2xl px-4 pb-24 pt-16 sm:px-6 lg:max-w-7xl lg:px-8">
           <div className="text-center py-12">
             <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Shopping Cart</h1>
             <p className="mt-8 text-lg text-gray-600">Your cart is empty</p>
-            {cart && <p className="text-xs text-gray-500 mt-2">Cart ID: {cart._id}</p>}
+            {displayCart && <p className="text-xs text-gray-500 mt-2">Cart ID: {displayCart._id}</p>}
           </div>
         </div>
       </div>
     )
   }
 
-  const validItems = cart.items.filter(item => item && item.product !== null)
+  const validItems = displayCart.items.filter(item => item && item.product !== null)
   const total = validItems.reduce((acc, item) => acc + (item?.product?.price || 0) * (item?.quantity || 0), 0)
 
   return (
@@ -80,7 +83,7 @@ function CartDetails() {
                 <CartItem
                   key={item.product!._id}
                   item={item as any}
-                  cartId={cart._id}
+                  cartId={displayCart._id}
                   onRemoveItem={removeItem}
                   onUpdateQuantity={updateQuantity}
                 />

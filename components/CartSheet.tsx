@@ -15,7 +15,7 @@ import { CartItem } from './CartItem'
 import { useCart } from '@/contexts/CartContext'
 
 export function CartSheet() {
-  const { cart, isLoading, error, removeItem, updateQuantity, checkout, isUpdating, mutate } = useCart()
+  const { cart, optimisticCart, isLoading, error, removeItem, updateQuantity, checkout, isUpdating, mutate } = useCart()
   const [isOpen, setIsOpen] = useState(false)
 
   // Listen for cart updates to open the sheet
@@ -30,13 +30,16 @@ export function CartSheet() {
     }
   }, [mutate])
 
-  const itemCount = cart && cart.items
-    ? cart.items.filter(item => item && item.product !== null)
+  // Use optimistic cart for UI, fallback to regular cart
+  const displayCart = optimisticCart || cart
+
+  const itemCount = displayCart && displayCart.items
+    ? displayCart.items.filter(item => item && item.product !== null)
       .reduce((sum, item) => sum + (item.quantity ?? 0), 0)
     : 0
 
-  const totalPrice = cart && cart.items
-    ? cart.items
+  const totalPrice = displayCart && displayCart.items
+    ? displayCart.items
       .filter(item => item && item.product !== null)
       .reduce((sum, item) => {
         const quantity = item.quantity ?? 0
@@ -51,7 +54,7 @@ export function CartSheet() {
         <Button variant="outline" size="icon" className="relative">
           <ShoppingCart className="h-4 w-4" />
           {itemCount > 0 && (
-            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+            <span className="absolute -top-2 -right-2 bg-primary text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
               {itemCount > 99 ? '99+' : itemCount}
             </span>
           )}
@@ -91,7 +94,7 @@ export function CartSheet() {
                   Retry
                 </Button>
               </div>
-            ) : cart && cart.items && cart.items.length > 0 ? (
+            ) : displayCart && displayCart.items && displayCart.items.length > 0 ? (
               <div className="flex flex-col h-full">
                 <div className="mb-4 flex-shrink-0">
                   <p className="text-sm text-gray-600">Items: {itemCount}</p>
@@ -99,7 +102,7 @@ export function CartSheet() {
                 </div>
 
                 <ul role="list" className="divide-y divide-gray-200 flex-1 overflow-y-auto min-h-0">
-                  {cart.items
+                  {displayCart.items
                     .filter(item => item && item.product !== null)
                     .map((item, index) => {
                       if (!item || !item.product) {
@@ -110,7 +113,7 @@ export function CartSheet() {
                         <CartItem
                           key={item.product._id || index}
                           item={item as any}
-                          cartId={cart._id}
+                          cartId={displayCart._id}
                           onRemoveItem={removeItem}
                           onUpdateQuantity={updateQuantity}
                         />
@@ -122,7 +125,7 @@ export function CartSheet() {
                   <Button
                     onClick={checkout}
                     className="w-full"
-                    disabled={isUpdating || !cart.items || cart.items.filter(item => item && item.product !== null).length === 0}
+                    disabled={isUpdating || !displayCart.items || displayCart.items.filter(item => item && item.product !== null).length === 0}
                   >
                     {isUpdating ? (
                       <>
@@ -138,7 +141,7 @@ export function CartSheet() {
             ) : (
               <div className="py-8 text-center">
                 <p>Your cart is empty.</p>
-                {cart && <p className="text-xs text-gray-500 mt-2">Cart ID: {cart._id}</p>}
+                {displayCart && <p className="text-xs text-gray-500 mt-2">Cart ID: {displayCart._id}</p>}
               </div>
             )}
           </div>
