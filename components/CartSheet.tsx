@@ -37,7 +37,7 @@ export function CartSheet() {
 
   const handleRemoveItem = useCallback(async (itemKey: string) => {
     if (!cart) return { error: 'No cart found' }
-    
+
     // Optimistic update
     setOptimisticUpdates(prev => ({
       ...prev,
@@ -132,9 +132,9 @@ export function CartSheet() {
         <Button variant="outline" size="icon" className="relative">
           <ShoppingCart className="h-4 w-4" />
           {cart && cart.items && (() => {
-            const itemCount = cart.items.filter(item => 
+            const itemCount = cart.items.filter(item =>
               item && item.product !== null && !optimisticUpdates[item._key]?.removed
-            ).reduce((sum, item) => 
+            ).reduce((sum, item) =>
               sum + (optimisticUpdates[item._key]?.quantity ?? item.quantity ?? 0), 0
             )
             return itemCount > 0 ? (
@@ -171,10 +171,10 @@ export function CartSheet() {
                 ) : cart && cart.items && cart.items.length > 0 ? (
                   <div>
                     {(() => {
-                      const visibleItems = cart.items.filter(item => 
+                      const visibleItems = cart.items.filter(item =>
                         item && item.product !== null && !optimisticUpdates[item._key]?.removed
                       )
-                      const totalItems = visibleItems.reduce((sum, item) => 
+                      const totalItems = visibleItems.reduce((sum, item) =>
                         sum + (optimisticUpdates[item._key]?.quantity ?? item.quantity ?? 0), 0
                       )
                       const totalPrice = visibleItems.reduce((sum, item) => {
@@ -182,7 +182,7 @@ export function CartSheet() {
                         const price = item.product?.price ?? 0
                         return sum + (quantity * price)
                       }, 0)
-                      
+
                       return (
                         <div className="mb-4">
                           <p className="text-sm text-gray-600">Items: {totalItems}</p>
@@ -201,13 +201,13 @@ export function CartSheet() {
                           if (!item || !item.product) {
                             return <li key={index} className="py-2 text-red-500">Error: Product not found</li>;
                           }
-                          
+
                           // Apply optimistic updates
                           const optimisticItem = {
                             ...item,
                             quantity: optimisticUpdates[item._key]?.quantity ?? item.quantity
                           }
-                          
+
                           return (
                             <CartItem
                               key={item.product._id || index}
@@ -219,10 +219,10 @@ export function CartSheet() {
                           );
                         })}
                     </ul>
-                    
+
                     <div className="mt-6 border-t pt-4">
-                      <Button 
-                        onClick={handleCheckout} 
+                      <Button
+                        onClick={handleCheckout}
                         className="w-full"
                         disabled={!cart.items || cart.items.filter(item => !optimisticUpdates[item._key]?.removed).length === 0}
                       >
