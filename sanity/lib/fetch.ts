@@ -34,6 +34,7 @@ export async function sanityFetch<const QueryString extends string>({
     _stega ||
     perspective === "previewDrafts" ||
     process.env.VERCEL_ENV === "preview";
+
   if (perspective === "previewDrafts") {
     return client.fetch(query, await params, {
       stega,
@@ -46,6 +47,7 @@ export async function sanityFetch<const QueryString extends string>({
       next: { revalidate: 0 },
     });
   }
+
   return client.fetch(query, await params, {
     stega,
     perspective: "published",

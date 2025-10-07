@@ -32,7 +32,7 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "lucide-react": "^0.544.0",
-    "next": "15.6.0-canary.45",
+    "next": "15.6.0-canary.47",
     "next-sanity": "^11.4.2",
     "next-sanity-image": "^6.2.0",
     "postcss": "^8.5.6",
