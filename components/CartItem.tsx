@@ -1,7 +1,5 @@
 'use client'
 
-import { SanityCart } from '@/types'
-
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { updateCartItemQuantity, removeCartItem } from '@/app/actions'
@@ -11,9 +9,14 @@ import { Input } from '@/components/ui/input'
 import { ProductImage } from './ProductImage'
 import { Button } from './ui/button'
 import { Trash } from 'lucide-react'
+import { CartQueryResult } from '@/sanity.types'
+
+type CartItemType = NonNullable<NonNullable<CartQueryResult>['items']>[0] & {
+  product: NonNullable<NonNullable<NonNullable<CartQueryResult>['items']>[0]['product']>;
+};
 
 type CartItemProps = {
-  item: SanityCart['items'][0];
+  item: CartItemType;
   cartId: string;
 }
 
@@ -70,7 +73,7 @@ export function CartItem({ item, cartId }: CartItemProps) {
                 </Link>
               </h3>
             </div>
-            <p className="mt-1 text-sm font-medium text-gray-900">${item.product.price / 100}</p>
+            <p className="mt-1 text-sm font-medium text-gray-900">${(item.product.price || 0) / 100}</p>
           </div>
 
           <div className="mt-4 sm:mt-0 sm:pr-9">

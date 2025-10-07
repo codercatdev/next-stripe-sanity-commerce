@@ -14,14 +14,16 @@ export function ProductHero({ product }: { product: FeaturedProductsQueryResult[
   return (
     <Link href={`/product/${product.slug}`} className="group">
       <div className="aspect-h-1 aspect-w-1 w-full overflow-hidden rounded-lg bg-gray-200 xl:aspect-h-8 xl:aspect-w-8">
-        <Img
-          {...imageProps}
-          alt={product?.name || 'Product Image'}
-          style={{ width: '100%', height: 'auto' }}
-          sizes="(max-width: 800px) 100vw, 800px"
-          placeholder="blur"
-          blurDataURL={product?.image?.metadata?.lqip}
-        />
+        {product?.image && imageProps?.src && (
+          <Img
+            {...imageProps}
+            alt={product?.name || 'Product Image'}
+            style={{ width: '100%', height: 'auto' }}
+            sizes="(max-width: 800px) 100vw, 800px"
+            placeholder="blur"
+            blurDataURL={product?.image?.metadata?.lqip}
+          />
+        )}
       </div>
       {/* <h3 className="mt-4 text-sm text-gray-700">{product.name}</h3>
       <p className="mt-1 text-lg font-medium text-gray-900">${product.price / 100}</p>  */}

@@ -13,11 +13,11 @@ import { SignedIn, SignedOut, SignInButton, SignUpButton, useAuth } from '@clerk
 import { getCart } from '@/app/actions'
 import { useCallback, useEffect, useState } from 'react'
 import { CartItem } from './CartItem'
-import { SanityCart } from '@/types'
+import { CartQueryResult } from '@/sanity.types'
 
 export function CartSheet() {
   const { sessionId } = useAuth()
-  const [cart, setCart] = useState<SanityCart | null>(null)
+  const [cart, setCart] = useState<CartQueryResult | null>(null)
   const [isOpen, setIsOpen] = useState(false)
 
   const fetchCart = useCallback(async () => {
@@ -69,9 +69,11 @@ export function CartSheet() {
         <SignedIn>
           {cart && cart.items && cart.items.length > 0 ? (
             <ul role="list" className="divide-y divide-gray-200">
-              {cart.items.map((item) => (
-                <CartItem key={item.product._id} item={item} cartId={cart._id} />
-              ))}
+              {cart.items
+                .filter((item) => item.product !== null)
+                .map((item) => (
+                  <CartItem key={item.product!._id} item={item as any} cartId={cart._id} />
+                ))}
             </ul>
           ) : (
             <p>Your cart is empty.</p>

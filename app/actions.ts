@@ -129,10 +129,12 @@ export async function createCheckoutSessionFromCart(cartId: string): Promise<{ u
       return { error: 'Cart is empty' }
     }
 
-    const lineItems = cart.items.map((item: { product: { priceId: string }; quantity: number }) => ({
-      price: item.product.priceId,
-      quantity: item.quantity,
-    }))
+    const lineItems = cart.items
+      .filter((item) => item.product && item.product.priceId && item.quantity)
+      .map((item) => ({
+        price: item.product!.priceId!,
+        quantity: item.quantity!,
+      }))
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],

@@ -1,11 +1,11 @@
 'use client'
 
 import { createCheckoutSession } from '@/app/actions'
-import { SanityProduct } from '@/types'
 import { toast } from 'sonner'
 import { Button } from './ui/button'
+import { ProductBySlugQueryResult } from '@/sanity.types'
 
-export function BuyNow({ product }: { product: SanityProduct }) {
+export function BuyNow({ product }: { product: NonNullable<ProductBySlugQueryResult> }) {
   const handleFormAction = async () => {
     if (product.priceId) {
       const result = await createCheckoutSession(product.priceId)

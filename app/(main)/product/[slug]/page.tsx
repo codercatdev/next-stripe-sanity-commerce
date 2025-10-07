@@ -84,7 +84,7 @@ async function ProductDetails({ slug }: { slug: string }) {
             {/* Options */}
             <div className="mt-4 lg:row-span-3 lg:mt-0">
               <h2 className="sr-only">Product information</h2>
-              <p className="text-3xl tracking-tight text-gray-900">${product.price / 100}</p>
+              <p className="text-3xl tracking-tight text-gray-900">${(product.price || 0) / 100}</p>
               <div className="flex gap-4 mt-2 md:mt-8">
                 <BuyNow product={product} />
                 <AddToCart product={product} />
@@ -97,7 +97,7 @@ async function ProductDetails({ slug }: { slug: string }) {
   )
 }
 
-export default async function ProductPage({ params }: { params: { slug: string } }) {
+export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   return (
     <>

@@ -68,13 +68,17 @@ function CartDetails() {
             </h2>
 
             <ul role="list" className="divide-y divide-gray-200 border-b border-t border-gray-200">
-              {cart.items.map((item) => (
-                <>
-                  {item?.product?._id && (
-                    <CartItem key={item.product._id} item={item} cartId={cart._id} />
-                  )}
-                </>
-              ))}
+              {cart && cart.items && cart.items.length > 0 ? (
+                <ul role="list" className="divide-y divide-gray-200">
+                  {cart.items
+                    .filter((item) => item.product !== null)
+                    .map((item) => (
+                      <CartItem key={item.product!._id} item={item as any} cartId={cart._id} />
+                    ))}
+                </ul>
+              ) : (
+                <p>Your cart is empty.</p>
+              )}
             </ul>
           </section>
 
