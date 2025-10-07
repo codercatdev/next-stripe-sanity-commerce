@@ -30,5 +30,13 @@ export default defineType({
       type: 'reference',
       to: [{ type: 'product' }],
     }),
+    defineField({
+      name: 'updatedFromStripe',
+      title: 'Updated from Stripe',
+      type: 'boolean',
+      hidden: true,
+      readOnly: true,
+      description: 'Internal flag to prevent infinite sync loops with Stripe webhooks'
+    }),
   ],
 })

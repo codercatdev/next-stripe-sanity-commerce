@@ -10,8 +10,9 @@
     "lint": "next lint",
     "presetup": "echo 'about to setup env variables, follow the guide here: https://github.com/vercel/next.js/tree/canary/examples/cms-sanity#using-the-sanity-cli'",
     "setup": "npx sanity@latest init --env .env.local",
-    "postsetup": "echo 'create the read token by following the rest of the guide: https://github.com/vercel/next.js/tree/canary/examples/cms-sanity#creating-a-read-token'",
-    "typegen": "sanity schema extract && sanity typegen generate"
+    "postsetup": "echo 'create the read token by following the rest of the guide: https://github.com/vercel/next.js/tree/canity/examples/cms-sanity#creating-a-read-token'",
+    "typegen": "sanity schema extract && sanity typegen generate",
+    "test:sync": "npx tsx scripts/test-sync.ts"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.33.3",
@@ -23,6 +24,7 @@
     "@sanity/image-url": "^1.2.0",
     "@sanity/preview-url-secret": "^2.1.15",
     "@sanity/vision": "^4.10.2",
+    "@sanity/webhook": "^4.0.4",
     "@tailwindcss/typography": "^0.5.19",
     "@types/node": "^24.7.0",
     "@types/react": "^19.2.0",

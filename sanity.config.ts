@@ -25,6 +25,7 @@ import collection from "@/sanity/schemas/documents/collection";
 import price from "@/sanity/schemas/documents/price";
 import product from "@/sanity/schemas/documents/product";
 import { stripeSession } from "@/sanity/schemas/documents/stripeSession";
+import { syncProductAction, syncPriceAction } from "@/sanity/actions/stripe-sync-actions";
 
 const homeLocation = {
   title: "Home",
@@ -48,6 +49,17 @@ export default defineConfig({
       cart,
       stripeSession
     ],
+  },
+  document: {
+    actions: (prev, context) => {
+      if (context.schemaType === 'product') {
+        return [...prev, syncProductAction];
+      }
+      if (context.schemaType === 'price') {
+        return [...prev, syncPriceAction];
+      }
+      return prev;
+    },
   },
   plugins: [
     presentationTool({

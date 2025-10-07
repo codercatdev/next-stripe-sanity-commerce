@@ -595,6 +595,13 @@
           }
         },
         "optional": true
+      },
+      "updatedFromStripe": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "boolean"
+        },
+        "optional": true
       }
     }
   },
@@ -681,6 +688,13 @@
             }
           },
           "dereferencesTo": "product"
+        },
+        "optional": true
+      },
+      "updatedFromStripe": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "boolean"
         },
         "optional": true
       }

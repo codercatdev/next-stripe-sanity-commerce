@@ -80,5 +80,13 @@ export default defineType({
       of: [{ type: 'number' }],
       hidden: true,
     }),
+    defineField({
+      name: 'updatedFromStripe',
+      title: 'Updated from Stripe',
+      type: 'boolean',
+      hidden: true,
+      readOnly: true,
+      description: 'Internal flag to prevent infinite sync loops with Stripe webhooks'
+    }),
   ],
 })

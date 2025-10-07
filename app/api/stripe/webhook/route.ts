@@ -43,6 +43,12 @@ async function syncProductToSanity(product: Stripe.Product) {
     updated: product.updated
   });
 
+  // Check if this update came from Sanity to prevent infinite loop
+  if (product.metadata?.updated_from_sanity === 'true') {
+    console.log(`[WEBHOOK] Skipping sync - product update originated from Sanity`);
+    return;
+  }
+
   if (!product.id) {
     const error = `Product ID is missing or invalid: ${product.id}`;
     console.error(`[WEBHOOK] ERROR: ${error}`);
@@ -159,12 +165,11 @@ async function syncProductToSanity(product: Stripe.Product) {
       _id: result._id,
       _rev: result._rev
     });
+    
   } catch (error) {
     console.error(`[WEBHOOK] ERROR: Failed to create/update product document in Sanity:`, error);
     throw new Error(`Failed to sync product ${product.id} to Sanity: ${error}`);
-  }
-
-  // // Generate embeddings
+  }  // // Generate embeddings
   // const embeddingText = `${product.name}. ${product.description || ''}`;
   // console.log(`[WEBHOOK] Generating embeddings for product ${product.id} with text: "${embeddingText.slice(0, 100)}..."`);
 
@@ -276,8 +281,15 @@ async function syncPriceToSanity(price: Stripe.Price, retryCount = 0) {
     nickname: price.nickname,
     recurring: price.recurring,
     type: price.type,
-    created: price.created
+    created: price.created,
+    metadata: price.metadata
   });
+
+  // Check if this update came from Sanity to prevent infinite loop
+  if (price.metadata?.updated_from_sanity === 'true') {
+    console.log(`[WEBHOOK] Skipping sync - price update originated from Sanity`);
+    return;
+  }
 
   if (!price.id) {
     const error = `Price ID is missing or invalid: ${price.id}`;
@@ -331,6 +343,28 @@ async function syncPriceToSanity(price: Stripe.Price, retryCount = 0) {
       active: productDoc.active
     });
 
+    // Check if price already exists and if it's different
+    const existingPrice = await client.fetch(`*[_id == $priceId][0]`, { priceId: `stripe-${price.id}` });
+    
+    if (existingPrice) {
+      // Only update if pricing data is different
+      const isPricingDifferent = 
+        existingPrice.unit_amount !== price.unit_amount || 
+        existingPrice.currency !== price.currency;
+        
+      if (!isPricingDifferent) {
+        console.log(`[WEBHOOK] Skipping price update - pricing data is unchanged for price ${price.id}`);
+        return;
+      }
+      
+      console.log(`[WEBHOOK] Price data has changed:`, {
+        old_amount: existingPrice.unit_amount,
+        new_amount: price.unit_amount,
+        old_currency: existingPrice.currency,
+        new_currency: price.currency
+      });
+    }
+
     const priceDoc = {
       _id: `stripe-${price.id}`,
       _type: 'price',
@@ -356,9 +390,7 @@ async function syncPriceToSanity(price: Stripe.Price, retryCount = 0) {
     console.log(`[WEBHOOK] Successfully created/updated price document:`, {
       _id: createResult._id,
       _rev: createResult._rev
-    });
-
-    // Update the product's prices array
+    });    // Update the product's prices array
     console.log(`[WEBHOOK] Updating product ${productDoc._id} with price reference`);
 
     const patchResult = await client
@@ -372,7 +404,8 @@ async function syncPriceToSanity(price: Stripe.Price, retryCount = 0) {
           _type: 'reference',
           _ref: `stripe-${price.id}`,
           _key: `stripe-${price.id}`
-        }]
+        }],
+        updatedFromStripe: true // Flag to prevent infinite sync loops
       })
       .unset(['stripePriceId']) // Remove temporary Stripe price ID field
       .commit();
@@ -402,7 +435,8 @@ async function syncPriceToSanity(price: Stripe.Price, retryCount = 0) {
             default_price: {
               _type: 'reference',
               _ref: `stripe-${price.id}`
-            }
+            },
+            updatedFromStripe: true // Flag to prevent infinite sync loops
           })
           .unset(['stripePriceId'])
           .commit();

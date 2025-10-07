@@ -113,6 +113,7 @@ export type Product = {
   active?: boolean;
   featured?: boolean;
   embedding?: Array<number>;
+  updatedFromStripe?: boolean;
 };
 
 export type Price = {
@@ -130,6 +131,7 @@ export type Price = {
     _weak?: boolean;
     [internalGroqTypeReferenceTo]?: "product";
   };
+  updatedFromStripe?: boolean;
 };
 
 export type Post = {
