@@ -6,6 +6,6 @@ export default async function RootLayout({
 }) {
 
   return (
-    <MainLayout children={children} />
+    <MainLayout>{children}</MainLayout>
   );
 }

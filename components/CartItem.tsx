@@ -32,6 +32,22 @@ export function CartItem({ item, cartId, onRemoveItem, onUpdateQuantity }: CartI
     setInputValue(currentQuantity.toString())
   }, [currentQuantity])
 
+  const handleRemoveItem = useCallback(async () => {
+    // Use provided handler (which should be optimistic)
+    if (onRemoveItem) {
+      await onRemoveItem(item._key)
+      return
+    }
+
+    // Fallback - shouldn't normally be used with the new optimistic system
+    const result = await removeCartItem(cartId, item._key)
+    if (result?.error) {
+      toast.error(result.error)
+    } else {
+      window.dispatchEvent(new CustomEvent('cart-updated'))
+    }
+  }, [item._key, onRemoveItem, cartId])
+
   const handleQuantityChange = useCallback(async (newQuantity: number) => {
     if (newQuantity < 0) return // Prevent negative quantities
 
@@ -55,7 +71,7 @@ export function CartItem({ item, cartId, onRemoveItem, onUpdateQuantity }: CartI
     } else {
       window.dispatchEvent(new CustomEvent('cart-updated'))
     }
-  }, [item._key, onUpdateQuantity, cartId, currentQuantity])
+  }, [item._key, onUpdateQuantity, cartId, currentQuantity, handleRemoveItem])
 
   // Debounced quantity update for input changes
   const handleInputChange = useCallback((value: string) => {
@@ -83,22 +99,6 @@ export function CartItem({ item, cartId, onRemoveItem, onUpdateQuantity }: CartI
       }
     }
   }, [])
-
-  const handleRemoveItem = useCallback(async () => {
-    // Use provided handler (which should be optimistic)
-    if (onRemoveItem) {
-      await onRemoveItem(item._key)
-      return
-    }
-
-    // Fallback - shouldn't normally be used with the new optimistic system
-    const result = await removeCartItem(cartId, item._key)
-    if (result?.error) {
-      toast.error(result.error)
-    } else {
-      window.dispatchEvent(new CustomEvent('cart-updated'))
-    }
-  }, [item._key, onRemoveItem, cartId])
 
   return (
     <li key={item.product._id} className="flex flex-col gap-2 py-6 sm:py-10 ">
