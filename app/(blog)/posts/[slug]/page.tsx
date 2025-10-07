@@ -51,7 +51,7 @@ export async function generateMetadata(
 
 export default async function PostPage({ params }: Props) {
   const { slug } = await params;
-  
+
   return (
     <Suspense fallback={<LoadingPost />}>
       <DynamicPostContent slug={slug} />
