@@ -13,9 +13,9 @@ type ProductImageProps = {
 };
 
 export function ProductImage({ product }: ProductImageProps) {
-  const imageProps: any = product?.image ? useNextSanityImage(client, product.image, {
+  const imageProps: any = useNextSanityImage(client, product.image, {
     imageBuilder: (builder, { width, quality }) => builder.width(width || 400).height(width || 400).fit('crop').crop('center').quality(quality || 80)
-  }) : null;
+  });
 
   return (
     <div className="aspect-w-1 aspect-h-1 w-full overflow-hidden rounded-lg bg-gray-200 xl:aspect-w-8 xl:aspect-h-8">

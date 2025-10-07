@@ -10,30 +10,30 @@ import { useState } from 'react';
 type Product = NonNullable<FeaturedProductsQueryResult[0]>;
 
 // Helper component to handle the hook properly
-function ProductCard({ 
-  product, 
-  index, 
-  totalCards, 
-  hoveredIndex, 
-  setHoveredIndex 
-}: { 
+function ProductCard({
+  product,
+  index,
+  totalCards,
+  hoveredIndex,
+  setHoveredIndex
+}: {
   product: Product;
   index: number;
   totalCards: number;
   hoveredIndex: number | null;
   setHoveredIndex: (index: number | null) => void;
 }) {
-  const imageProps = product?.image ? useNextSanityImage(client, product.image, {
+  const imageProps = useNextSanityImage(client, product.image, {
     imageBuilder: (builder, { width, quality }) =>
       builder.width(width || 600).height(width || 800).fit('crop').crop('center').quality(quality || 90)
-  }) : null;
+  });
 
   const isHovered = hoveredIndex === index;
   const isAdjacent = hoveredIndex !== null && Math.abs(hoveredIndex - index) === 1;
 
   // Calculate positioning for deck effect
   const baseRotation = (index - (totalCards - 1) / 2) * 3;
-  const baseTranslateX = (index - (totalCards - 1) / 2) * 50;
+  const baseTranslateX = (index - (totalCards - 1) / 2) * 120;
   const baseScale = 0.95 - Math.abs(index - (totalCards - 1) / 2) * 0.02;
 
   // Adjust on hover
@@ -73,7 +73,7 @@ function ProductCard({
       <div className="relative w-[280px] md:w-[350px] h-[420px] md:h-[520px] rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-br from-gray-900 to-gray-800 group">
         {/* Product Image */}
         <div className="absolute inset-0 overflow-hidden">
-          {imageProps?.src && (
+          {product?.image && imageProps?.src && (
             <Img
               src={imageProps.src}
               alt={product?.name || 'Product'}

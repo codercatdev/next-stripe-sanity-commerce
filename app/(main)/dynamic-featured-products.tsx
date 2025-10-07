@@ -3,7 +3,7 @@ import { ProductHero } from '@/components/ProductHero'
 import { sanityFetchPPR } from "@/sanity/lib/fetch-ppr";
 import { featuredProductsQuery, heroQuery } from "@/sanity/lib/queries";
 import { FeaturedProductsQueryResult } from '@/sanity.types'
-import ProductCarousel from '@/components/ProductCarousel';
+import MobileProductCarousel from '@/components/MobileProductCarousel';
 import { Suspense } from 'react';
 import { ProductCarouselSkeleton } from '@/components/ProductCarouselSkeleton';
 
@@ -14,7 +14,7 @@ async function ProductCarouselWrapper() {
         }),
     ]);
 
-    return <ProductCarousel products={products} />;
+    return <MobileProductCarousel products={products} />;
 }
 
 export default async function FeaturedProducts() {

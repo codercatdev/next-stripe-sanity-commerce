@@ -3,10 +3,10 @@
 import Link from 'next/link'
 import { useNextSanityImage } from 'next-sanity-image';
 import Img from 'next/image';
-import { FeaturedProductsQueryResult } from '@/sanity.types';
+import { ProductsQueryResult } from '@/sanity.types';
 import { client } from "@/sanity/lib/client";
 
-export function ProductCard({ product }: { product: NonNullable<FeaturedProductsQueryResult[0]> }) {
+export function ProductCard({ product }: { product: NonNullable<ProductsQueryResult[0]> }) {
   const imageProps = useNextSanityImage(client, product.image, {
     imageBuilder: (builder, { width, quality }) => builder.width(width || 400).height(width || 400).fit('crop').crop('center').quality(quality || 80)
   });
