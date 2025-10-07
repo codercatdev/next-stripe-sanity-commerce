@@ -1,11 +1,17 @@
 import { Suspense } from 'react'
+import type { Metadata } from "next";
 import { Header } from '@/components/Header'
-
-import { ProductCard } from '@/components/ProductCard'
+import DynamicAllProducts from '@/app/(main)/dynamic-all-products'
 import { Skeleton } from '@/components/ui/skeleton'
-import { productsQuery } from '@/sanity/lib/queries'
-import { sanityFetch } from '@/sanity/lib/fetch'
-import { ProductsQueryResult } from '@/sanity.types'
+
+// Enable PPR for this page
+export const experimental_ppr = true;
+
+// Static metadata for products page
+export const metadata: Metadata = {
+  title: "All Products - CodingCat.dev",
+  description: "Browse our complete collection of products",
+};
 
 function ProductCardSkeleton() {
   return (
@@ -34,37 +40,15 @@ function AllProductsSkeleton() {
   );
 }
 
-async function AllProducts() {
-  const [products] = await Promise.all([
-    sanityFetch({
-      query: productsQuery,
-    }),
-  ]);
-  return (
-    <div className="bg-white">
-      <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">
-        <h2 className="text-2xl font-bold tracking-tight text-gray-900">All Products</h2>
-
-        <div className="mt-6 grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4 xl:gap-x-8">
-          {products.map((product: ProductsQueryResult[0]) => (
-            <ProductCard key={product._id} product={product} />
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-}
-
 export default function ProductsPage() {
   return (
     <>
       <Header />
       <main>
         <Suspense fallback={<AllProductsSkeleton />}>
-          <AllProducts />
+          <DynamicAllProducts />
         </Suspense>
       </main>
-
     </>
   )
 }

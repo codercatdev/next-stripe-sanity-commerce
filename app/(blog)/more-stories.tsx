@@ -4,7 +4,7 @@ import Avatar from "./avatar";
 import CoverImage from "./cover-image";
 import DateComponent from "./date";
 
-import { sanityFetch } from "@/sanity/lib/fetch";
+import { sanityFetchPPR } from "@/sanity/lib/fetch-ppr";
 import { moreStoriesQuery } from "@/sanity/lib/queries";
 import { MoreStoriesQueryResult } from "@/sanity.types";
 
@@ -12,7 +12,7 @@ export default async function MoreStories(params: {
   skip: string;
   limit: number;
 }) {
-  const data = await sanityFetch({ query: moreStoriesQuery, params });
+  const data = await sanityFetchPPR({ query: moreStoriesQuery, params });
 
   return (
     <>

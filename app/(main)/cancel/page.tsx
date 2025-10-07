@@ -1,4 +1,15 @@
 import Link from 'next/link'
+import type { Metadata } from "next";
+
+// Enable PPR for this page
+export const experimental_ppr = true;
+export const dynamic = 'force-dynamic';
+
+// Static metadata for cancel page
+export const metadata: Metadata = {
+  title: "Payment Canceled - CodingCat.dev",
+  description: "Your payment was canceled",
+};
 
 export default function CancelPage() {
   return (

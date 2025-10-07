@@ -1,6 +1,10 @@
 'use client'
 
 import { Suspense, useCallback, useEffect, useState } from 'react'
+
+// Enable PPR for this page
+export const experimental_ppr = true;
+export const dynamic = 'force-dynamic';
 import { Header } from '@/components/Header'
 
 import { getCart } from '@/app/actions'

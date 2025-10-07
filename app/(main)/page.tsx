@@ -1,12 +1,17 @@
 import { Suspense } from 'react'
+import type { Metadata } from "next";
 import { Header } from '@/components/Header'
-
-import { ProductCard } from '@/components/ProductCard'
-import { ProductHero } from '@/components/ProductHero'
-import { sanityFetch } from "@/sanity/lib/fetch";
-import { featuredProductsQuery, heroQuery, settingsQuery } from "@/sanity/lib/queries";
+import DynamicFeaturedProducts from '@/app/(main)/dynamic-featured-products'
 import { Skeleton } from '@/components/ui/skeleton'
-import { FeaturedProductsQueryResult } from '@/sanity.types'
+
+// Enable PPR for this page
+export const experimental_ppr = true;
+
+// Static metadata for homepage
+export const metadata: Metadata = {
+  title: "CodingCat.dev - Featured Products",
+  description: "Discover our featured products and latest offerings",
+};
 
 function ProductCardSkeleton() {
   return (
@@ -40,45 +45,13 @@ function FeaturedProductsSkeleton() {
   );
 }
 
-async function FeaturedProducts() {
-  const [products] = await Promise.all([
-    sanityFetch({
-      query: featuredProductsQuery,
-    }),
-    sanityFetch({ query: heroQuery }),
-  ]);
-
-  const heroProduct = products.at(0);
-
-  return (
-    <>
-      {heroProduct && (
-        <div>
-          <ProductHero key={heroProduct._id} product={heroProduct} />
-        </div>
-      )}
-      <div className="">
-        <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">
-          <h2 className="text-2xl font-bold tracking-tight text-gray-900">Featured Products</h2>
-
-          <div className="mt-6 grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4 xl:gap-x-8">
-            {products.map((product: FeaturedProductsQueryResult[0]) => (
-              <ProductCard key={product._id} product={product} />
-            ))}
-          </div>
-        </div>
-      </div>
-    </>
-  )
-}
-
 export default function HomePage() {
   return (
     <>
       <Header />
       <main>
         <Suspense fallback={<FeaturedProductsSkeleton />}>
-          <FeaturedProducts />
+          <DynamicFeaturedProducts />
         </Suspense>
       </main>
     </>
