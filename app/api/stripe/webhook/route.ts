@@ -165,7 +165,7 @@ async function syncProductToSanity(product: Stripe.Product) {
       _id: result._id,
       _rev: result._rev
     });
-    
+
   } catch (error) {
     console.error(`[WEBHOOK] ERROR: Failed to create/update product document in Sanity:`, error);
     throw new Error(`Failed to sync product ${product.id} to Sanity: ${error}`);
@@ -345,18 +345,18 @@ async function syncPriceToSanity(price: Stripe.Price, retryCount = 0) {
 
     // Check if price already exists and if it's different
     const existingPrice = await client.fetch(`*[_id == $priceId][0]`, { priceId: `stripe-${price.id}` });
-    
+
     if (existingPrice) {
       // Only update if pricing data is different
-      const isPricingDifferent = 
-        existingPrice.unit_amount !== price.unit_amount || 
+      const isPricingDifferent =
+        existingPrice.unit_amount !== price.unit_amount ||
         existingPrice.currency !== price.currency;
-        
+
       if (!isPricingDifferent) {
         console.log(`[WEBHOOK] Skipping price update - pricing data is unchanged for price ${price.id}`);
         return;
       }
-      
+
       console.log(`[WEBHOOK] Price data has changed:`, {
         old_amount: existingPrice.unit_amount,
         new_amount: price.unit_amount,
