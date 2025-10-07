@@ -61,7 +61,7 @@ export default async function DynamicPostContent({ slug }: Props) {
                 </div>
                 {post.content?.length && (
                     <PortableText
-                        className="mx-auto max-w-2xl"
+                        className="mx-auto max-w-2xl prose-violet lg:prose-xl dark:prose-invert"
                         value={post.content as PortableTextBlock[]}
                     />
                 )}
