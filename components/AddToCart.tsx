@@ -1,36 +1,28 @@
 'use client'
 
-import { addToCart } from '@/app/actions'
-import { toast } from 'sonner'
 import { Button } from './ui/button'
 import { useAuth, SignInButton } from '@clerk/nextjs'
 import { ProductsQueryResult } from '@/sanity.types'
+import { useCart } from '@/contexts/CartContext'
+import { Loader2 } from 'lucide-react'
+import { useState } from 'react'
 
 export function AddToCart({ product }: { product: ProductsQueryResult[0] }) {
-  const { userId, sessionId } = useAuth()
+  const { userId } = useAuth()
+  const { addItem, isUpdating } = useCart()
+  const [isLoading, setIsLoading] = useState(false)
 
-  const handleFormAction = async () => {
+  const handleAddToCart = async () => {
     if (!product._id) {
       console.error('Missing product ID:', product)
-      toast.error('Product information is missing.')
       return
     }
 
-    if (!sessionId) {
-      console.error('Missing session ID')
-      toast.error('User session not found. Please try signing out and back in.')
-      return
-    }
-
-    console.log('Adding product to cart:', { productId: product._id, sessionId })
-
-    const result = await addToCart(product._id, sessionId)
-    if (result.error) {
-      console.error('Failed to add to cart:', result.error)
-      toast.error(result.error)
-    } else {
-      toast.success('Added to cart')
-      window.dispatchEvent(new CustomEvent('cart-updated'))
+    setIsLoading(true)
+    try {
+      await addItem(product._id)
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -42,13 +34,21 @@ export function AddToCart({ product }: { product: ProductsQueryResult[0] }) {
     )
   }
 
+  const loading = isLoading || isUpdating
+
   return (
-    <form action={handleFormAction}>
-      <Button
-        type="submit"
-      >
-        Add to Cart
-      </Button>
-    </form>
+    <Button
+      onClick={handleAddToCart}
+      disabled={loading}
+    >
+      {loading ? (
+        <>
+          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+          Adding...
+        </>
+      ) : (
+        'Add to Cart'
+      )}
+    </Button>
   )
 }

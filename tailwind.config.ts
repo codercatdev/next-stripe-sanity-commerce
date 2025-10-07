@@ -13,5 +13,8 @@ export default {
   future: {
     hoverOnlyWhenSupported: true,
   },
-  plugins: [typography],
+  plugins: [
+    typography,
+    require('@tailwindcss/aspect-ratio'),
+  ],
 } satisfies Config;

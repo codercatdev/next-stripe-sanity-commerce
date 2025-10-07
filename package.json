@@ -25,6 +25,7 @@
     "@sanity/preview-url-secret": "^2.1.15",
     "@sanity/vision": "^4.10.2",
     "@sanity/webhook": "^4.0.4",
+    "@tailwindcss/aspect-ratio": "^0.4.2",
     "@tailwindcss/typography": "^0.5.19",
     "@types/node": "^24.7.0",
     "@types/react": "^19.2.0",
@@ -47,6 +48,7 @@
     "sonner": "^2.0.7",
     "stripe": "^19.0.0",
     "styled-components": "^6.1.19",
+    "swr": "^2.3.6",
     "tailwind-merge": "^3.3.1",
     "typescript": "5.9.3"
   },

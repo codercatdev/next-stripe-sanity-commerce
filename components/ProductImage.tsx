@@ -11,12 +11,12 @@ export function ProductImage({ product }: { product: FeaturedProductsQueryResult
   });
 
   return (
-    <div className="aspect-h-1 aspect-w-1 w-full overflow-hidden rounded-lg bg-gray-200 xl:aspect-h-8 xl:aspect-w-8">
+    <div className="aspect-w-1 aspect-h-1 w-full overflow-hidden rounded-lg bg-gray-200 xl:aspect-w-8 xl:aspect-h-8">
       {product?.image && imageProps?.src && (
         <Img
           {...imageProps}
           alt={product?.name || 'Product Image'}
-          style={{ width: '100%', height: 'auto' }}
+          className="h-full w-full object-cover"
           sizes="(max-width: 800px) 100vw, 800px"
           placeholder="blur"
           blurDataURL={product?.image?.metadata?.lqip}

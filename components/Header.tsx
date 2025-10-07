@@ -20,7 +20,10 @@ export function Header() {
             Home
           </Link>
           <Link href="/products" className="text-sm font-semibold leading-6 text-gray-900">
-            Products
+            Shoes
+          </Link>
+          <Link href="/blog" className="text-sm font-semibold leading-6 text-gray-900">
+            Blog
           </Link>
         </div>
         <div className="hidden lg:flex lg:flex-1 lg:justify-end items-center gap-4">

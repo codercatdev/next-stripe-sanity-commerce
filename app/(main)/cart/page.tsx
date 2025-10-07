@@ -1,65 +1,69 @@
 'use client'
 
-import { Suspense, useCallback, useEffect, useState } from 'react'
+import { Suspense } from 'react'
+import { Loader2 } from 'lucide-react'
 
 // Enable PPR for this page
 export const experimental_ppr = true;
 export const dynamic = 'force-dynamic';
 import { Header } from '@/components/Header'
 
-import { getCart } from '@/app/actions'
 import { CartItem } from '@/components/CartItem'
-import { createCheckoutSessionFromCart } from '@/app/actions'
-import { toast } from 'sonner'
-import { useAuth } from '@clerk/nextjs'
-import { CartQueryResult } from '@/sanity.types'
+import { useCart } from '@/contexts/CartContext'
+import { Button } from '@/components/ui/button'
 
 function CartDetailsSkeleton() {
-  return <div>Loading...</div>
+  return (
+    <div className="bg-white">
+      <div className="mx-auto max-w-2xl px-4 pb-24 pt-16 sm:px-6 lg:max-w-7xl lg:px-8">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin" />
+          <span className="ml-2 text-lg">Loading cart...</span>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 function CartDetails() {
-  const [cart, setCart] = useState<CartQueryResult | null>(null)
-  const { sessionId } = useAuth()
+  const { cart, isLoading, error, removeItem, updateQuantity, checkout, isUpdating, mutate } = useCart()
 
+  if (isLoading) {
+    return <CartDetailsSkeleton />
+  }
 
-  const fetchCart = useCallback(async () => {
-    if (sessionId) {
-      const cartData = await getCart(sessionId)
-      setCart(cartData)
-    }
-  }, [sessionId])
-
-  useEffect(() => {
-    fetchCart()
-  }, [fetchCart])
-
-  useEffect(() => {
-    const handleCartUpdate = () => {
-      fetchCart()
-    }
-    window.addEventListener('cart-updated', handleCartUpdate)
-    return () => {
-      window.removeEventListener('cart-updated', handleCartUpdate)
-    }
-  }, [fetchCart])
-
-  const handleCheckout = async () => {
-    if (cart) {
-      const result = await createCheckoutSessionFromCart(cart._id)
-      if (result.error) {
-        toast.error(result.error)
-      } else if (result.url) {
-        window.location.href = result.url
-      }
-    }
+  if (error) {
+    return (
+      <div className="bg-white">
+        <div className="mx-auto max-w-2xl px-4 pb-24 pt-16 sm:px-6 lg:max-w-7xl lg:px-8">
+          <div className="text-center py-12">
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">Error Loading Cart</h1>
+            <p className="text-gray-600 mb-4">There was a problem loading your cart.</p>
+            <Button onClick={() => mutate()} variant="outline">
+              Try Again
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   if (!cart || !cart.items || cart.items.length === 0) {
-    return <div>Your cart is empty</div>
+    return (
+      <div className="bg-white">
+        <div className="mx-auto max-w-2xl px-4 pb-24 pt-16 sm:px-6 lg:max-w-7xl lg:px-8">
+          <div className="text-center py-12">
+            <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Shopping Cart</h1>
+            <p className="mt-8 text-lg text-gray-600">Your cart is empty</p>
+            {cart && <p className="text-xs text-gray-500 mt-2">Cart ID: {cart._id}</p>}
+          </div>
+        </div>
+      </div>
+    )
   }
 
-  const total = cart.items.reduce((acc, item) => acc + (item?.product?.price || 0) * (item?.quantity || 0), 0)
+  const validItems = cart.items.filter(item => item && item.product !== null)
+  const total = validItems.reduce((acc, item) => acc + (item?.product?.price || 0) * (item?.quantity || 0), 0)
 
   return (
     <div className="bg-white">
@@ -72,17 +76,15 @@ function CartDetails() {
             </h2>
 
             <ul role="list" className="divide-y divide-gray-200 border-b border-t border-gray-200">
-              {cart && cart.items && cart.items.length > 0 ? (
-                <ul role="list" className="divide-y divide-gray-200">
-                  {cart.items
-                    .filter((item) => item.product !== null)
-                    .map((item) => (
-                      <CartItem key={item.product!._id} item={item as any} cartId={cart._id} />
-                    ))}
-                </ul>
-              ) : (
-                <p>Your cart is empty.</p>
-              )}
+              {validItems.map((item) => (
+                <CartItem
+                  key={item.product!._id}
+                  item={item as any}
+                  cartId={cart._id}
+                  onRemoveItem={removeItem}
+                  onUpdateQuantity={updateQuantity}
+                />
+              ))}
             </ul>
           </section>
 
@@ -96,19 +98,33 @@ function CartDetails() {
             </h2>
 
             <dl className="mt-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <dt className="text-sm text-gray-600">Items ({validItems.length})</dt>
+                <dd className="text-sm text-gray-900">
+                  {validItems.reduce((sum, item) => sum + (item?.quantity || 0), 0)} total
+                </dd>
+              </div>
               <div className="flex items-center justify-between border-t border-gray-200 pt-4">
                 <dt className="text-base font-medium text-gray-900">Order total</dt>
-                <dd className="text-base font-medium text-gray-900">${total / 100}</dd>
+                <dd className="text-base font-medium text-gray-900">${(total / 100).toFixed(2)}</dd>
               </div>
             </dl>
 
             <div className="mt-6">
-              <button
-                onClick={handleCheckout}
-                className="w-full rounded-md border border-transparent bg-indigo-600 px-4 py-3 text-base font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50"
+              <Button
+                onClick={checkout}
+                className="w-full"
+                disabled={isUpdating || validItems.length === 0}
               >
-                Checkout
-              </button>
+                {isUpdating ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    Processing...
+                  </>
+                ) : (
+                  'Checkout'
+                )}
+              </Button>
             </div>
           </section>
         </div>

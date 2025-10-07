@@ -18,6 +18,7 @@ export const experimental_ppr = true;
 
 import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "sonner";
+import { CartProvider } from "@/contexts/CartContext";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -36,13 +37,15 @@ export default async function RootLayout({
     <ClerkProvider>
       <html lang="en" className={`${inter.variable} bg-white text-black`}>
         <body>
-          <section className="min-h-screen">
-            {isDraftMode && <AlertBanner />}
-            <main>{children}</main>
-            <Suspense fallback={<MainFooterSkeleton />}>
-              <DynamicMainFooter />
-            </Suspense>
-          </section>
+          <CartProvider>
+            <section className="min-h-screen">
+              {isDraftMode && <AlertBanner />}
+              <main>{children}</main>
+              <Suspense fallback={<MainFooterSkeleton />}>
+                <DynamicMainFooter />
+              </Suspense>
+            </section>
+          </CartProvider>
           {isDraftMode && <VisualEditing />}
           <SpeedInsights />
           <Toaster richColors />
