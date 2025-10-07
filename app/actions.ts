@@ -2,7 +2,7 @@
 
 import { draftMode } from "next/headers";
 import Stripe from 'stripe'
-import { client } from "@/sanity/lib/client";
+import { client, writeClient } from "@/sanity/lib/client";
 import { cartByIdQuery, cartQuery } from "@/sanity/lib/queries";
 import { Cart, CartByIdQueryResult, CartQueryResult } from "@/sanity.types";
 
@@ -49,40 +49,67 @@ export async function createCheckoutSession(priceId: string): Promise<{ url?: st
 
 export async function addToCart(productId: string, sessionId: string): Promise<{ error?: string }> {
   try {
+    // Validate inputs
+    if (!productId || !sessionId) {
+      return { error: 'Missing product ID or session ID' }
+    }
+
+    // Check if write token is configured
+    if (!process.env.SANITY_API_TOKEN) {
+      console.error('Missing SANITY_API_TOKEN environment variable')
+      return { error: 'Server configuration error' }
+    }
+
+    console.log('Adding to cart:', { productId, sessionId })
+
     const cart = await client.fetch('*[_type == "cart" && sessionId == $sessionId][0]', { sessionId })
 
     if (cart) {
-      const productIndex = cart.items.findIndex((item: { product: { _ref: string } }) => item.product._ref === productId)
+      console.log('Found existing cart:', cart._id)
+      const productIndex = cart.items?.findIndex((item: { product: { _ref: string } }) => item.product._ref === productId) ?? -1
 
       if (productIndex > -1) {
-        await client
+        console.log('Incrementing existing item quantity')
+        await writeClient
           .patch(cart._id)
           .inc({ [`items[${productIndex}].quantity`]: 1 })
           .commit()
       } else {
-        await client
+        console.log('Adding new item to cart')
+        await writeClient
           .patch(cart._id)
-          .append('items', [{ product: { _type: 'reference', _ref: productId }, quantity: 1 }])
+          .append('items', [{
+            _key: `item-${Date.now()}`,
+            product: { _type: 'reference', _ref: productId },
+            quantity: 1
+          }])
           .commit()
       }
     } else {
-      await client.create({
+      console.log('Creating new cart')
+      await writeClient.create({
         _type: 'cart',
         sessionId,
-        items: [{ product: { _type: 'reference', _ref: productId }, quantity: 1 }],
+        items: [{
+          _key: `item-${Date.now()}`,
+          product: { _type: 'reference', _ref: productId },
+          quantity: 1
+        }],
       })
     }
 
+    console.log('Successfully added to cart')
     return {}
   } catch (error) {
-    console.error(error)
-    return { error: 'Failed to add to cart' }
+    console.error('Detailed error adding to cart:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Failed to add to cart'
+    return { error: errorMessage }
   }
 }
 
 export async function updateCartItemQuantity(cartId: string, itemId: string, quantity: number): Promise<{ error?: string }> {
   try {
-    await client
+    await writeClient
       .patch(cartId)
       .set({ [`items[_key=="${itemId}"].quantity`]: quantity })
       .commit()
@@ -95,7 +122,7 @@ export async function updateCartItemQuantity(cartId: string, itemId: string, qua
 
 export async function removeCartItem(cartId: string, itemId: string): Promise<{ error?: string }> {
   try {
-    await client
+    await writeClient
       .patch(cartId)
       .unset([`items[_key=="${itemId}"]`])
       .commit()
@@ -108,15 +135,34 @@ export async function removeCartItem(cartId: string, itemId: string): Promise<{ 
 
 export async function getCart(sessionId: string): Promise<CartQueryResult | null> {
   try {
-    const cart = await client.fetch(cartQuery,
-      { sessionId }
-    );
+    console.log('Fetching cart for sessionId:', sessionId);
+
+    // First, let's see if there are any carts at all
+    const allCarts = await client.fetch('*[_type == "cart"]');
+    console.log('All carts in database:', allCarts);
+
+    const cart = await client.fetch(cartQuery, { sessionId });
+    console.log('Cart fetch result:', cart);
+
+    if (cart) {
+      console.log('Cart items:', cart.items);
+      console.log('Number of items:', cart.items?.length || 0);
+
+      // Log each item for debugging
+      if (cart.items) {
+        cart.items.forEach((item, index) => {
+          console.log(`Item ${index}:`, item);
+        });
+      }
+    }
+
     return cart;
   } catch (error) {
-    console.error(error);
+    console.error('Error fetching cart:', error);
     return null;
   }
 }
+
 
 export async function createCheckoutSessionFromCart(cartId: string): Promise<{ url?: string; error?: string }> {
   try {

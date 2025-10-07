@@ -18,12 +18,24 @@ type CartItemType = NonNullable<NonNullable<CartQueryResult>['items']>[0] & {
 type CartItemProps = {
   item: CartItemType;
   cartId: string;
+  onRemoveItem?: (itemKey: string) => Promise<{ error?: string }>;
+  onUpdateQuantity?: (itemKey: string, newQuantity: number) => Promise<{ error?: string }>;
 }
 
-export function CartItem({ item, cartId }: CartItemProps) {
+export function CartItem({ item, cartId, onRemoveItem, onUpdateQuantity }: CartItemProps) {
   const [optimisticQuantity, setOptimisticQuantity] = useState(item.quantity)
 
   const handleQuantityChange = async (newQuantity: number) => {
+    // Use provided handler if available, otherwise fall back to direct action
+    if (onUpdateQuantity) {
+      const result = await onUpdateQuantity(item._key, newQuantity)
+      if (result?.error) {
+        toast.error(result.error)
+      }
+      return
+    }
+
+    // Fallback to local state management
     const oldQuantity = optimisticQuantity
     setOptimisticQuantity(newQuantity)
 
@@ -43,6 +55,16 @@ export function CartItem({ item, cartId }: CartItemProps) {
   }
 
   const handleRemoveItem = async () => {
+    // Use provided handler if available, otherwise fall back to direct action
+    if (onRemoveItem) {
+      const result = await onRemoveItem(item._key)
+      if (result?.error) {
+        toast.error(result.error)
+      }
+      return
+    }
+
+    // Fallback to local state management
     const oldQuantity = optimisticQuantity
     setOptimisticQuantity(0)
     const result = await removeCartItem(cartId, item._key)
@@ -86,7 +108,7 @@ export function CartItem({ item, cartId }: CartItemProps) {
                 name={`quantity-${item._key}`}
                 type="number"
                 className="w-16"
-                value={optimisticQuantity}
+                value={onUpdateQuantity ? item.quantity : optimisticQuantity}
                 onChange={(e) => handleQuantityChange(parseInt(e.target.value))}
               />
               <Button onClick={handleRemoveItem} variant="ghost" size="icon" aria-label="Submit">
