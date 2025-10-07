@@ -43,7 +43,6 @@ function AllProductsSkeleton() {
 export default function ProductsPage() {
   return (
     <>
-      <Header />
       <main>
         <Suspense fallback={<AllProductsSkeleton />}>
           <DynamicAllProducts />

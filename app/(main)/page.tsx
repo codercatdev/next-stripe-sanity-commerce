@@ -48,7 +48,6 @@ function FeaturedProductsSkeleton() {
 export default function HomePage() {
   return (
     <>
-      <Header />
       <main>
         <Suspense fallback={<FeaturedProductsSkeleton />}>
           <DynamicFeaturedProducts />

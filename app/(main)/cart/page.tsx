@@ -139,7 +139,6 @@ function CartDetails() {
 export default function CartPage() {
   return (
     <>
-      <Header />
       <main>
         <Suspense fallback={<CartDetailsSkeleton />}>
           <CartDetails />

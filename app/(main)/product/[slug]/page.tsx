@@ -14,7 +14,6 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const { slug } = await params;
   return (
     <>
-      <Header />
       <main>
         <div className="bg-white">
           <div className="pt-6">
