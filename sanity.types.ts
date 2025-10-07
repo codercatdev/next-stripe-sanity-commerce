@@ -790,10 +790,12 @@ export type ProductBySlugQueryResult = {
   priceId: string | null;
 } | null;
 // Variable: featuredProductsQuery
-// Query: *[_type == "product"] | order(_createdAt asc)[0...8]{    _id,    name,    "slug": slug.current,    "price": default_price->.unit_amount,    "image": images[0].asset->,  }
+// Query: *[_type == "product"] | order(_createdAt asc)[0...8]{    _id,    name,    brand,    description,    "slug": slug.current,    "price": default_price->.unit_amount,    "image": images[0].asset->,  }
 export type FeaturedProductsQueryResult = Array<{
   _id: string;
   name: string | null;
+  brand: string | null;
+  description: string | null;
   slug: string | null;
   price: number | null;
   image: {
@@ -884,7 +886,7 @@ declare module "@sanity/client" {
     "\n  *[_type == \"post\" && slug.current == $slug] [0] {\n    content,\n    \n  _id,\n  \"status\": select(_originalId in path(\"drafts.**\") => \"draft\", \"published\"),\n  \"title\": coalesce(title, \"Untitled\"),\n  \"slug\": slug.current,\n  excerpt,\n  coverImage,\n  \"date\": coalesce(date, _updatedAt),\n  \"author\": author->{\"name\": coalesce(name, \"Anonymous\"), picture},\n\n  }\n": PostQueryResult;
     "\n  *[_type == \"product\"]{\n    _id,\n    name,\n    description,\n    \"slug\": slug.current,\n    \"price\": default_price->.unit_amount,\n    \"image\": images[0].asset->,\n  }\n": ProductsQueryResult;
     "\n  *[_type == \"product\" && slug.current == $slug][0]{\n    _id,\n    name,\n    description,\n    \"slug\": slug.current,\n    \"price\": default_price->.unit_amount,\n    \"image\": images[0].asset->,\n    \"priceId\": default_price->.stripePriceId,\n    }\n": ProductBySlugQueryResult;
-    "\n  *[_type == \"product\"] | order(_createdAt asc)[0...8]{\n    _id,\n    name,\n    \"slug\": slug.current,\n    \"price\": default_price->.unit_amount,\n    \"image\": images[0].asset->,\n  }\n": FeaturedProductsQueryResult;
+    "\n  *[_type == \"product\"] | order(_createdAt asc)[0...8]{\n    _id,\n    name,\n    brand,\n    description,\n    \"slug\": slug.current,\n    \"price\": default_price->.unit_amount,\n    \"image\": images[0].asset->,\n  }\n": FeaturedProductsQueryResult;
     "\n  *[_type == \"cart\" && userId == $userId][0]{\n        ...,\n        items[]{\n          ...,\n          product->{\n            _id,\n            name,\n            description,\n            \"slug\": slug.current,\n            \"price\": default_price->.unit_amount,\n            \"image\": images[0].asset->,\n          }\n        }\n      }\n": CartQueryResult;
     "\n  *[_type == \"cart\" && _id == $cartId][0]{\n        items[]{\n          quantity,\n          product->{\n            \"priceId\": default_price->.stripePriceId\n          }\n        }\n      }\n": CartByIdQueryResult;
   }

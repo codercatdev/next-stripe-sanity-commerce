@@ -17,6 +17,12 @@ import { useCart } from '@/contexts/CartContext'
 export function CartSheet() {
   const { cart, optimisticCart, isLoading, error, removeItem, updateQuantity, checkout, isUpdating, mutate } = useCart()
   const [isOpen, setIsOpen] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
+
+  // Prevent hydration mismatch by only rendering after mount
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   // Listen for cart updates to open the sheet
   useEffect(() => {
@@ -47,6 +53,15 @@ export function CartSheet() {
         return sum + (quantity * price)
       }, 0)
     : 0
+
+  // Show a static button during SSR to prevent hydration mismatch
+  if (!isMounted) {
+    return (
+      <Button variant="outline" size="icon" className="relative">
+        <ShoppingCart className="h-4 w-4" />
+      </Button>
+    )
+  }
 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>

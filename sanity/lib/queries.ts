@@ -60,6 +60,8 @@ export const featuredProductsQuery = defineQuery(`
   *[_type == "product"] | order(_createdAt asc)[0...8]{
     _id,
     name,
+    brand,
+    description,
     "slug": slug.current,
     "price": default_price->.unit_amount,
     "image": images[0].asset->,

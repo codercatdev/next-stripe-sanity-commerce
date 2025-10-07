@@ -3,24 +3,39 @@ import { ProductHero } from '@/components/ProductHero'
 import { sanityFetchPPR } from "@/sanity/lib/fetch-ppr";
 import { featuredProductsQuery, heroQuery } from "@/sanity/lib/queries";
 import { FeaturedProductsQueryResult } from '@/sanity.types'
+import ProductCarousel from '@/components/ProductCarousel';
+import { Suspense } from 'react';
+import { ProductCarouselSkeleton } from '@/components/ProductCarouselSkeleton';
+
+async function ProductCarouselWrapper() {
+    const [products] = await Promise.all([
+        sanityFetchPPR({
+            query: featuredProductsQuery,
+        }),
+    ]);
+
+    return <ProductCarousel products={products} />;
+}
 
 export default async function FeaturedProducts() {
     const [products] = await Promise.all([
         sanityFetchPPR({
             query: featuredProductsQuery,
         }),
-        sanityFetchPPR({ query: heroQuery }),
     ]);
 
     const heroProduct = products.at(0);
 
     return (
         <>
-            {heroProduct && (
+            {/* {heroProduct && (
                 <div>
                     <ProductHero key={heroProduct._id} product={heroProduct} />
                 </div>
-            )}
+            )} */}
+            <Suspense fallback={<ProductCarouselSkeleton />}>
+                <ProductCarouselWrapper />
+            </Suspense>
             <div className="">
                 <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">
                     <h2 className="text-2xl font-bold tracking-tight text-gray-900">Featured Products</h2>
